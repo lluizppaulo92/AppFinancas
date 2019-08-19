@@ -10,6 +10,7 @@ import br.com.lluizppaulo.financas.model.Transacao
 import br.com.lluizppaulo.financas.ui.ResumoView
 import br.com.lluizppaulo.financas.ui.adapter.ListTransacoesAdapter
 import br.com.lluizppaulo.financas.ui.dialog.AdicionaTransacaoDialog
+import br.com.lluizppaulo.financas.ui.dialog.AlteraTransacaoDialog
 import kotlinx.android.synthetic.main.activity_lista_transacoes.*
 
 class ListaTransacoesActivity : AppCompatActivity() {
@@ -40,17 +41,16 @@ class ListaTransacoesActivity : AppCompatActivity() {
         AdicionaTransacaoDialog(tipo = tipo, context = this, viewGroup = window.decorView as ViewGroup)
             .dialogAddTransacao(object : TransacaoDelegate {
                 override fun delafate(transacao: Transacao) {
-                    atualizaTransacao(transacao)
+                    transacaoes.add(transacao)
+                    atualizaTransacao()
                     lista_transacoes_adiciona_menu.close(true)
                 }
 
             })
     }
 
-    private fun atualizaTransacao(
-        transacao: Transacao
-    ) {
-        transacaoes.add(transacao)
+    private fun atualizaTransacao() {
+
         configuraLista()
         configuraResumo()
     }
@@ -61,7 +61,21 @@ class ListaTransacoesActivity : AppCompatActivity() {
 
 
     private fun configuraLista() {
-        lista_transacoes_listview.adapter = ListTransacoesAdapter(transacaoes, this)
+        with(lista_transacoes_listview) {
+            adapter = ListTransacoesAdapter(transacaoes, this@ListaTransacoesActivity)
+            setOnItemClickListener { _, _, position, _ ->
+                val transacao =  transacaoes[position]
+                AlteraTransacaoDialog(window.decorView as ViewGroup,this@ListaTransacoesActivity,transacao)
+                    .dialogAlteraTransacao(object : TransacaoDelegate{
+                        override fun delafate(transacao: Transacao) {
+                            transacaoes[position] = transacao
+                            atualizaTransacao()
+                        }
+
+                    })
+
+            }
+        }
     }
 
 
